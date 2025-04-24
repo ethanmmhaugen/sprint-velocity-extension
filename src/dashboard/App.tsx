@@ -1,30 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { Storage } from "../shared/storage";
 import { StoryEntry } from "../shared/models";
+import { Line, Bar } from "react-chartjs-2";
 
 import {
 	Chart,
-	LineController,
 	LineElement,
 	PointElement,
-	LinearScale,
+	BarElement,
+	LineController,
+	BarController,
 	CategoryScale,
+	LinearScale,
+	Tooltip,
+	Legend,
+	Title,
+} from "chart.js";
+
+Chart.register(
+	// Common elements
+	CategoryScale,
+	LinearScale,
 	Title,
 	Tooltip,
 	Legend,
-	Colors,
-} from "chart.js";
-import { Line } from "react-chartjs-2";
 
-Chart.register(
+	// Line chart
 	LineController,
 	LineElement,
 	PointElement,
-	LinearScale,
-	CategoryScale,
-	Title,
-	Tooltip,
-	Legend
+
+	// Bar chart
+	BarController,
+	BarElement
 );
 
 export const App: React.FC = () => {
@@ -95,6 +103,77 @@ export const App: React.FC = () => {
 		},
 	};
 
+	const sprintStats = new Map<
+		number,
+		{ points: number; qaBugs: number; designErrors: number; prComments: number }
+	>();
+
+	for (const entry of entries) {
+		const sprint = Number(entry.sprint);
+		if (isNaN(sprint)) continue;
+
+		const stat = sprintStats.get(sprint) || {
+			points: 0,
+			qaBugs: 0,
+			designErrors: 0,
+			prComments: 0,
+		};
+		stat.points += entry.points;
+		stat.qaBugs += entry.qaBugs;
+		stat.designErrors += entry.designErrors;
+		stat.prComments += entry.prComments;
+		sprintStats.set(sprint, stat);
+	}
+
+	const sprintLabels = Array.from(sprintStats.keys()).sort((a, b) => a - b);
+	const pointsData = sprintLabels.map((s) => sprintStats.get(s)?.points ?? 0);
+	const bugsData = sprintLabels.map((s) => sprintStats.get(s)?.qaBugs ?? 0);
+	const designErrorsData = sprintLabels.map(
+		(s) => sprintStats.get(s)?.designErrors ?? 0
+	);
+	const commentsData = sprintLabels.map(
+		(s) => sprintStats.get(s)?.prComments ?? 0
+	);
+
+	const barChartData = {
+		labels: sprintLabels.map((s) => `Sprint ${s}`),
+		datasets: [
+			{
+				label: "Story Points",
+				data: pointsData,
+				backgroundColor: "#4bc0c0",
+			},
+			{
+				label: "QA Bugs",
+				data: bugsData,
+				backgroundColor: "#ff6384",
+			},
+			{
+				label: "Design Errors",
+				data: designErrorsData,
+				backgroundColor: "#ff9f40",
+			},
+			{
+				label: "PR Comments",
+				data: commentsData,
+				backgroundColor: "#9966ff",
+			},
+		],
+	};
+
+	const barChartOptions = {
+		responsive: true,
+		plugins: {
+			legend: { position: "top" as const },
+			title: { display: true, text: "Sprint Breakdown by Category" },
+		},
+		scales: {
+			y: {
+				beginAtZero: true,
+			},
+		},
+	};
+
 	const toggleSelection = (id: string) => {
 		setSelectedIds((prev) => {
 			const next = new Set(prev);
@@ -132,6 +211,9 @@ export const App: React.FC = () => {
 			{activeTab === "chart" && entries.length > 0 && (
 				<div style={{ marginBottom: 20 }}>
 					<Line options={options} data={data} />
+					<div style={{ marginTop: 40 }}>
+						<Bar options={barChartOptions} data={barChartData} />
+					</div>
 				</div>
 			)}
 
