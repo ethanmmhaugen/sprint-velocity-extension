@@ -1,0 +1,9 @@
+{
+	"manifest_version": 3,
+	"name": "Sprint Velocity Gamifier",
+	"version": "0.1.0",
+	"permissions": ["storage", "notifications", "tabs"],
+	"action": { "default_popup": "popup/popup.html" },
+	"options_page": "dashboard/dashboard.html",
+	"background": { "service_worker": "background.js" }
+}
