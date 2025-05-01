@@ -76,6 +76,7 @@ export const Table: React.FC = () => {
 	];
 
 	const handleRowUpdate = (updatedRow: StoryEntry) => {
+		debugger;
 		const updatedGamePoints = calculateGamePoints(
 			Number(updatedRow.storyPoints || 0),
 			Number(updatedRow.prComments || 0),
@@ -89,7 +90,7 @@ export const Table: React.FC = () => {
 		};
 
 		// Update devHours globally if changed
-		const existing = entries.find((e) => e.id === updatedRow.id);
+		const existing = entries.find((e) => e.sprint === updatedRow.sprint);
 		if (
 			existing?.sprint &&
 			updatedRow.devHours !== undefined &&

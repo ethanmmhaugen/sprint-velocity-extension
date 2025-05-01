@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { StoryEntry } from "../shared/models";
 import { Storage } from "../shared/storage";
+import { calculateGamePoints } from "../shared/util";
 
 interface DataContextType {
 	entries: StoryEntry[];
@@ -166,8 +167,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 				prComments: 0,
 				qaBugs: 0,
 				designErrors: 0,
-				gamePoints: 0,
-				devHours: 0,
+				gamePoints: calculateGamePoints(storyPoints, 0, 0, 0),
+				devHours: 80,
 				notes: "",
 			};
 
