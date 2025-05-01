@@ -1,11 +1,9 @@
-// webpack.config.js
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
 	mode: "development",
 	entry: {
-		popup: "./src/popup/index.tsx",
 		dashboard: "./src/dashboard/index.tsx",
 		background: "./src/background.ts",
 	},
@@ -24,13 +22,29 @@ module.exports = {
 				use: "ts-loader",
 				exclude: /node_modules/,
 			},
+			{
+				test: /\.module\.css$/,
+				use: [
+					"style-loader",
+					{
+						loader: "css-loader",
+						options: {
+							modules: true,
+						},
+					},
+				],
+			},
+			{
+				test: /\.css$/,
+				exclude: /\.module\.css$/,
+				use: ["style-loader", "css-loader"],
+			},
 		],
 	},
 	plugins: [
 		new CopyPlugin({
 			patterns: [
 				{ from: "src/manifest.json", to: "" },
-				{ from: "src/popup/popup.html", to: "popup/popup.html" },
 				{
 					from: "src/dashboard/dashboard.html",
 					to: "dashboard/dashboard.html",

@@ -1,9 +1,14 @@
-// src/dashboard/index.tsx
+// index.tsx or dashboard.tsx
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { DataProvider } from "../components/DataContext";
 
-const container = document.getElementById("root");
-if (container) {
-	createRoot(container).render(<App />);
+const root = document.getElementById("root");
+if (root) {
+	createRoot(root).render(
+		<DataProvider>
+			<App />
+		</DataProvider>
+	);
 }

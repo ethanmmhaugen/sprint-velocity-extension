@@ -2,13 +2,16 @@
 
 /** One logged “story” entry */
 export interface StoryEntry {
-	id: string; // uuid or timestamp-based
-	date: number; // Date.now()
-	points: number; // story points completed
-	qaBugs: number; // number of QA bugs
-	designErrors: number;
+	id: string; // Unique internal ID
+	issueKey: string; // e.g., TITANS-1234
+	issueId: string; // Jira ID (optional for linking)
+	summary: string;
+	sprint: string | number;
+	storyPoints: number;
 	prComments: number;
+	qaBugs: number;
+	designErrors: number;
 	gamePoints: number;
-	sprint: string;
-	link: string;
+	devHours: number;
+	notes: string;
 }

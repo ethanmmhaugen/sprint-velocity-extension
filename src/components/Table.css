@@ -1,0 +1,15 @@
+.buttons-container {
+	display: flex;
+	gap: 20px;
+
+	button {
+		padding: 5px 8px;
+		font-size: 0.95rem;
+		border: 1px solid #ccc;
+		background-color: #f9f9f9;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		width: 150px;
+	}
+}
