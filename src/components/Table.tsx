@@ -3,6 +3,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useDataContext } from "./DataContext";
 import { StoryEntry } from "../shared/models";
 import { calculateGamePoints } from "../shared/util";
+import "./Table.css";
 
 export const Table: React.FC = () => {
 	const {
