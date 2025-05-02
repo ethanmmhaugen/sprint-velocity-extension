@@ -56,8 +56,6 @@ export const Table: React.FC = () => {
 			type: "number",
 			width: 100,
 			editable: true,
-			valueGetter: (params: { row?: StoryEntry }) =>
-				params.row?.sprint ? sprintDevHours[params.row.sprint] ?? 0 : 0,
 		},
 		{
 			field: "gamePoints",
@@ -76,7 +74,6 @@ export const Table: React.FC = () => {
 	];
 
 	const handleRowUpdate = (updatedRow: StoryEntry) => {
-		debugger;
 		const updatedGamePoints = calculateGamePoints(
 			Number(updatedRow.storyPoints || 0),
 			Number(updatedRow.prComments || 0),
@@ -92,14 +89,34 @@ export const Table: React.FC = () => {
 		// Update devHours globally if changed
 		const existing = entries.find((e) => e.sprint === updatedRow.sprint);
 		if (
-			existing?.sprint &&
+			updatedRow.sprint &&
 			updatedRow.devHours !== undefined &&
-			updatedRow.devHours !== sprintDevHours[existing.sprint]
+			updatedRow.devHours !== sprintDevHours[updatedRow.sprint]
 		) {
-			setSprintDevHours({
+			// 1. Update sprint-level hours
+			const updatedSprintDevHours = {
 				...sprintDevHours,
-				[existing.sprint]: updatedRow.devHours,
-			});
+				[updatedRow.sprint]: updatedRow.devHours,
+			};
+			setSprintDevHours(updatedSprintDevHours);
+
+			// 2. Update all rows that share the same sprint
+			const updatedEntries = entries.map((entry) =>
+				entry.sprint === updatedRow.sprint
+					? {
+							...entry,
+							devHours: updatedRow.devHours,
+							gamePoints: calculateGamePoints(
+								entry.storyPoints,
+								entry.prComments,
+								entry.qaBugs,
+								entry.designErrors
+							),
+					  }
+					: entry
+			);
+
+			setEntries(updatedEntries);
 		}
 
 		const updated = entries.map((entry) =>

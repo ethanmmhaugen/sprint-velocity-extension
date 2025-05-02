@@ -71,11 +71,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 	};
 
 	const toggleSelectionBulk = (ids: Set<string>) => {
-		console.log(ids);
 		setSelectedIds(new Set(ids));
 	};
-
-	console.log(selectedIds);
 
 	const handleDeleteSelected = async () => {
 		const updated = entries.filter((e) => !selectedIds.has(e.id));
@@ -173,6 +170,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 			};
 
 			entries.push(newEntry);
+		}
+
+		const sprintHours: { [sprint: string]: number } = { ...sprintDevHours };
+
+		for (const entry of entries) {
+			if (entry.sprint && !sprintHours[entry.sprint]) {
+				sprintHours[entry.sprint] = entry.devHours;
+			}
 		}
 
 		return entries;

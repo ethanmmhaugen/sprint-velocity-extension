@@ -101,14 +101,13 @@ export const Graph: React.FC = () => {
 			prComments: 0,
 			qaBugs: 0,
 			designErrors: 0,
-			devHours: 0,
+			devHours: entry.devHours,
 			gamePoints: 0,
 		};
 		stat.storyPoints += entry.storyPoints;
 		stat.prComments += entry.prComments;
 		stat.qaBugs += entry.qaBugs;
 		stat.designErrors += entry.designErrors;
-		stat.devHours += entry.devHours || 0;
 		stat.gamePoints += entry.gamePoints;
 		sprintStats.set(sprint, stat);
 	}
