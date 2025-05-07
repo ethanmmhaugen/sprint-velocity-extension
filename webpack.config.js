@@ -15,7 +15,7 @@ const envKeys = Object.keys(env).reduce((prev, next) => {
 module.exports = {
 	mode: "development",
 	entry: {
-		dashboard: "./src/dashboard/index.tsx",
+		app: "./src/app/index.tsx",
 		background: "./src/background.ts",
 	},
 	output: {
@@ -25,6 +25,12 @@ module.exports = {
 	},
 	resolve: {
 		extensions: [".ts", ".tsx", ".js"],
+		alias: {
+			"@": path.resolve(__dirname, "src"),
+			"@components": path.resolve(__dirname, "components"),
+			"@app": path.resolve(__dirname, "src/app"),
+			"@lib": path.resolve(__dirname, "lib"),
+		},
 	},
 	module: {
 		rules: [
@@ -34,21 +40,8 @@ module.exports = {
 				exclude: /node_modules/,
 			},
 			{
-				test: /\.module\.css$/,
-				use: [
-					"style-loader",
-					{
-						loader: "css-loader",
-						options: {
-							modules: true,
-						},
-					},
-				],
-			},
-			{
 				test: /\.css$/,
-				exclude: /\.module\.css$/,
-				use: ["style-loader", "css-loader"],
+				use: ["style-loader", "css-loader", "postcss-loader"],
 			},
 		],
 	},
@@ -57,7 +50,11 @@ module.exports = {
 			patterns: [
 				{ from: "src/manifest.json", to: "" },
 				{
-					from: "src/dashboard/dashboard.html",
+					from: "src/app/app.html",
+					to: "app/app.html",
+				},
+				{
+					from: "src/app/app.html",
 					to: "dashboard/dashboard.html",
 				},
 			],

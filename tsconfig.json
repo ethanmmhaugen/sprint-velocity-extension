@@ -1,6 +1,13 @@
 // tsconfig.json
 {
 	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"],
+			"@components/*": ["components/*"],
+			"@app/*": ["src/app/*"],
+			"@lib/*": ["lib/*"]
+		},
 		"target": "es6",
 		"module": "esnext",
 		"lib": ["dom", "es6"],
@@ -13,5 +20,5 @@
 		"allowSyntheticDefaultImports": true,
 		"types": ["chrome"] // include Chrome extension API typings
 	},
-	"include": ["src"]
+	"include": ["src", "components"]
 }

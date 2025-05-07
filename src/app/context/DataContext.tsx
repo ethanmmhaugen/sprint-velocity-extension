@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { StoryEntry } from "../shared/models";
-import { Storage } from "../shared/storage";
-import { calculateGamePoints } from "../shared/util";
+import { StoryEntry } from "../../shared/models";
+import { Storage } from "../../shared/storage";
+import { calculateGamePoints } from "../../shared/util";
 
 interface DataContextType {
 	entries: StoryEntry[];
