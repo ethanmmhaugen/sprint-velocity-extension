@@ -6,14 +6,14 @@ import { calculateGamePoints } from "../shared/util";
 interface DataContextType {
 	entries: StoryEntry[];
 	selectedIds: Set<string>;
-	setEntries: (entries: StoryEntry[]) => void;
+	setEntries: (entries: StoryEntry[]) => Promise<void>;
 	toggleSelection: (id: string) => void;
 	toggleSelectionBulk: (ids: Set<string>) => void;
-	handleDeleteSelected: () => void;
+	handleDeleteSelected: () => Promise<void>;
 	isUploading: boolean;
 	handleImport: () => void;
 	sprintDevHours: { [sprint: string]: number };
-	setSprintDevHours: (hours: { [sprint: string]: number }) => void;
+	setSprintDevHours: (hours: { [sprint: string]: number }) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -29,7 +29,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 	}>({});
 
 	useEffect(() => {
-		Storage.getAll().then((stored) => {
+		const loadData = async () => {
+			const stored = await Storage.getAll();
 			setEntriesInternal(stored);
 
 			// Initialize sprint dev hours map from existing entries if any
@@ -40,15 +41,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 				}
 			}
 			setSprintDevHoursInternal(sprintMap);
-		});
+		};
+
+		loadData();
 	}, []);
 
-	const setEntries = (updated: StoryEntry[]) => {
+	const setEntries = async (updated: StoryEntry[]) => {
 		setEntriesInternal(updated);
-		chrome.storage.local.set({ entries: updated });
+		await Storage.setAll(updated);
 	};
 
-	const setSprintDevHours = (hours: { [sprint: string]: number }) => {
+	const setSprintDevHours = async (hours: { [sprint: string]: number }) => {
 		setSprintDevHoursInternal(hours);
 
 		// Also update entries that share that sprint
@@ -58,7 +61,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 			}
 			return entry;
 		});
-		setEntries(updatedEntries);
+		await setEntries(updatedEntries);
 	};
 
 	const toggleSelection = (id: string) => {
@@ -102,7 +105,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 				);
 
 				const updatedEntries = [...entries, ...filteredNewEntries];
-				setEntries(updatedEntries);
+				await setEntries(updatedEntries);
 			} catch (err) {
 				console.error("Error importing CSV:", err);
 			} finally {

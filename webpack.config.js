@@ -1,5 +1,16 @@
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
+const webpack = require("webpack");
+const dotenv = require("dotenv");
+
+// Load environment variables from .env file
+const env = dotenv.config().parsed || {};
+
+// Create a new object with only the environment variables we need
+const envKeys = Object.keys(env).reduce((prev, next) => {
+	prev[`process.env.${next}`] = JSON.stringify(env[next]);
+	return prev;
+}, {});
 
 module.exports = {
 	mode: "development",
@@ -51,6 +62,7 @@ module.exports = {
 				},
 			],
 		}),
+		new webpack.DefinePlugin(envKeys),
 	],
 	devtool: "source-map",
 };

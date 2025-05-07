@@ -74,7 +74,7 @@ export const Table: React.FC = () => {
 		},
 	];
 
-	const handleRowUpdate = (updatedRow: StoryEntry) => {
+	const handleRowUpdate = async (updatedRow: StoryEntry) => {
 		const updatedGamePoints = calculateGamePoints(
 			Number(updatedRow.storyPoints || 0),
 			Number(updatedRow.prComments || 0),
@@ -99,7 +99,7 @@ export const Table: React.FC = () => {
 				...sprintDevHours,
 				[updatedRow.sprint]: updatedRow.devHours,
 			};
-			setSprintDevHours(updatedSprintDevHours);
+			await setSprintDevHours(updatedSprintDevHours);
 
 			// 2. Update all rows that share the same sprint
 			const updatedEntries = entries.map((entry) =>
@@ -117,17 +117,17 @@ export const Table: React.FC = () => {
 					: entry
 			);
 
-			setEntries(updatedEntries);
+			await setEntries(updatedEntries);
 		}
 
 		const updated = entries.map((entry) =>
 			entry.id === updatedRow.id ? updatedWithPoints : entry
 		);
-		setEntries(updated);
+		await setEntries(updated);
 		return updatedWithPoints;
 	};
 
-	const handleAddEntry = () => {
+	const handleAddEntry = async () => {
 		const newEntry: StoryEntry = {
 			id: crypto.randomUUID(), // or use Date.now().toString() for fallback
 			issueKey: "",
@@ -144,7 +144,7 @@ export const Table: React.FC = () => {
 		};
 
 		const updated = [newEntry, ...entries];
-		setEntries(updated);
+		await setEntries(updated);
 	};
 
 	return (
