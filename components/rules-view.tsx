@@ -79,15 +79,7 @@ export default function RulesView() {
 						</CardHeader>
 					</Card>
 				</div>
-
-				<div className="text-center italic text-muted-foreground mt-6">
-					Strategize wisely, and watch your game score soar across sprints! 🚀
-				</div>
 			</CardContent>
-			<CardFooter className="flex justify-center space-x-4">
-				<Button variant="default">Conquered Stories</Button>
-				<Button variant="outline">Line Go Up and to the Right</Button>
-			</CardFooter>
 		</Card>
 	);
 }

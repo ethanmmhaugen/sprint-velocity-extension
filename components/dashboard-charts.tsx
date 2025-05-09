@@ -6,59 +6,183 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@components/ui/card";
-import { ChartContainer, ChartTooltipContent } from "@components/ui/chart";
 import { TrendingUp, BarChart2, Clock } from "lucide-react";
 import {
-	BarChart,
-	LineChart,
-	Bar,
-	Line,
-	XAxis,
-	YAxis,
-	CartesianGrid,
+	Chart as ChartJS,
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	BarElement,
+	Title,
 	Tooltip,
 	Legend,
-	ResponsiveContainer,
-} from "recharts";
+	ChartData,
+	ChartOptions,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+import { useDataContext } from "@/app/context/DataContext";
 
-// Chart data
-const gamePointsData = [
-	{ name: "TITANS 25-05", gamePoints: 400 },
-	{ name: "TITANS 25-06", gamePoints: 400 },
-	{ name: "TITANS 25-07", gamePoints: 800 },
-];
-
-const sprintBreakdownData = [
-	{
-		name: "TITANS 25-05",
-		storyPoints: 4,
-		prComments: 0,
-		qaBugs: 0,
-		designErrors: 0,
-	},
-	{
-		name: "TITANS 25-06",
-		storyPoints: 4,
-		prComments: 0,
-		qaBugs: 0,
-		designErrors: 0,
-	},
-	{
-		name: "TITANS 25-07",
-		storyPoints: 8,
-		prComments: 0,
-		qaBugs: 0,
-		designErrors: 0,
-	},
-];
-
-const sprintEfficiencyData = [
-	{ name: "TITANS 25-05", storyPoints: 4, pointsPerHour: 5 },
-	{ name: "TITANS 25-06", storyPoints: 4, pointsPerHour: 5 },
-	{ name: "TITANS 25-07", storyPoints: 8, pointsPerHour: 10 },
-];
+// Register ChartJS components
+ChartJS.register(
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	BarElement,
+	Title,
+	Tooltip,
+	Legend
+);
 
 export default function DashboardCharts() {
+	const { entries } = useDataContext();
+
+	// Transform entries data for charts
+	const gamePointsData = entries
+		.reduce((acc, entry) => {
+			const sprintName = entry.sprint.toString();
+			const existingSprint = acc.find((item) => item.name === sprintName);
+
+			if (existingSprint) {
+				existingSprint.gamePoints += entry.gamePoints;
+			} else {
+				acc.push({
+					name: sprintName,
+					gamePoints: entry.gamePoints,
+				});
+			}
+			return acc;
+		}, [] as { name: string; gamePoints: number }[])
+		.sort((a, b) => a.name.localeCompare(b.name));
+
+	const sprintBreakdownData = entries
+		.reduce(
+			(acc, entry) => {
+				const sprintName = entry.sprint.toString();
+				const existingSprint = acc.find((item) => item.name === sprintName);
+
+				if (existingSprint) {
+					existingSprint.storyPoints += entry.storyPoints;
+					existingSprint.prComments += entry.prComments;
+					existingSprint.qaBugs += entry.qaBugs;
+					existingSprint.designErrors += entry.designErrors;
+				} else {
+					acc.push({
+						name: sprintName,
+						storyPoints: entry.storyPoints,
+						prComments: entry.prComments,
+						qaBugs: entry.qaBugs,
+						designErrors: entry.designErrors,
+					});
+				}
+				return acc;
+			},
+			[] as {
+				name: string;
+				storyPoints: number;
+				prComments: number;
+				qaBugs: number;
+				designErrors: number;
+			}[]
+		)
+		.sort((a, b) => a.name.localeCompare(b.name));
+
+	const sprintEfficiencyData = entries
+		.reduce((acc, entry) => {
+			const sprintName = entry.sprint.toString();
+			const existingSprint = acc.find((item) => item.name === sprintName);
+
+			if (existingSprint) {
+				existingSprint.storyPoints += entry.storyPoints;
+				existingSprint.pointsPerHour +=
+					entry.storyPoints / (entry.devHours || 1);
+			} else {
+				acc.push({
+					name: sprintName,
+					storyPoints: entry.storyPoints,
+					pointsPerHour: entry.storyPoints / (entry.devHours || 1),
+				});
+			}
+			return acc;
+		}, [] as { name: string; storyPoints: number; pointsPerHour: number }[])
+		.sort((a, b) => a.name.localeCompare(b.name));
+
+	// Chart data and options
+	const gamePointsChartData: ChartData<"line"> = {
+		labels: gamePointsData.map((d) => d.name),
+		datasets: [
+			{
+				label: "Game Points",
+				data: gamePointsData.map((d) => d.gamePoints),
+				borderColor: "hsl(var(--chart-1))",
+				backgroundColor: "hsl(var(--chart-1))",
+				tension: 0.4,
+			},
+		],
+	};
+
+	const sprintBreakdownChartData: ChartData<"bar"> = {
+		labels: sprintBreakdownData.map((d) => d.name),
+		datasets: [
+			{
+				label: "Story Points",
+				data: sprintBreakdownData.map((d) => d.storyPoints),
+				backgroundColor: "hsl(var(--chart-1))",
+			},
+			{
+				label: "PR Comments",
+				data: sprintBreakdownData.map((d) => d.prComments),
+				backgroundColor: "hsl(var(--chart-2))",
+			},
+			{
+				label: "QA Bugs",
+				data: sprintBreakdownData.map((d) => d.qaBugs),
+				backgroundColor: "hsl(var(--chart-3))",
+			},
+			{
+				label: "Design Errors",
+				data: sprintBreakdownData.map((d) => d.designErrors),
+				backgroundColor: "hsl(var(--chart-4))",
+			},
+		],
+	};
+
+	const sprintEfficiencyChartData: ChartData<"line"> = {
+		labels: sprintEfficiencyData.map((d) => d.name),
+		datasets: [
+			{
+				label: "Story Points",
+				data: sprintEfficiencyData.map((d) => d.storyPoints),
+				borderColor: "hsl(var(--chart-1))",
+				backgroundColor: "hsl(var(--chart-1))",
+				tension: 0.4,
+			},
+			{
+				label: "Points Per Hour",
+				data: sprintEfficiencyData.map((d) => d.pointsPerHour),
+				borderColor: "hsl(var(--chart-5))",
+				backgroundColor: "hsl(var(--chart-5))",
+				tension: 0.4,
+			},
+		],
+	};
+
+	const chartOptions: ChartOptions<"line" | "bar"> = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: {
+				position: "top" as const,
+			},
+		},
+		scales: {
+			y: {
+				beginAtZero: true,
+			},
+		},
+	};
+
 	return (
 		<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 			{/* Game Points Chart */}
@@ -71,31 +195,7 @@ export default function DashboardCharts() {
 					<CardDescription>Track your progress over time</CardDescription>
 				</CardHeader>
 				<CardContent className="h-80">
-					<ChartContainer
-						config={{
-							gamePoints: {
-								label: "Game Points",
-								color: "hsl(var(--chart-1))",
-							},
-						}}>
-						<ResponsiveContainer width="100%" height="100%">
-							<LineChart data={gamePointsData}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
-								<YAxis />
-								<Tooltip content={<ChartTooltipContent />} />
-								<Legend />
-								<Line
-									type="monotone"
-									dataKey="gamePoints"
-									stroke="hsl(var(--chart-1))"
-									strokeWidth={2}
-									dot={{ r: 4 }}
-									activeDot={{ r: 6 }}
-								/>
-							</LineChart>
-						</ResponsiveContainer>
-					</ChartContainer>
+					<Line data={gamePointsChartData} options={chartOptions} />
 				</CardContent>
 			</Card>
 
@@ -109,39 +209,7 @@ export default function DashboardCharts() {
 					<CardDescription>Story points and issues by sprint</CardDescription>
 				</CardHeader>
 				<CardContent className="h-80">
-					<ChartContainer
-						config={{
-							storyPoints: {
-								label: "Story Points",
-								color: "hsl(var(--chart-1))",
-							},
-							prComments: {
-								label: "PR Comments",
-								color: "hsl(var(--chart-2))",
-							},
-							qaBugs: {
-								label: "QA Bugs",
-								color: "hsl(var(--chart-3))",
-							},
-							designErrors: {
-								label: "Design Errors",
-								color: "hsl(var(--chart-4))",
-							},
-						}}>
-						<ResponsiveContainer width="100%" height="100%">
-							<BarChart data={sprintBreakdownData}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
-								<YAxis />
-								<Tooltip content={<ChartTooltipContent />} />
-								<Legend />
-								<Bar dataKey="storyPoints" fill="hsl(var(--chart-1))" />
-								<Bar dataKey="prComments" fill="hsl(var(--chart-2))" />
-								<Bar dataKey="qaBugs" fill="hsl(var(--chart-3))" />
-								<Bar dataKey="designErrors" fill="hsl(var(--chart-4))" />
-							</BarChart>
-						</ResponsiveContainer>
-					</ChartContainer>
+					<Bar data={sprintBreakdownChartData} options={chartOptions} />
 				</CardContent>
 			</Card>
 
@@ -157,41 +225,7 @@ export default function DashboardCharts() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="h-80">
-					<ChartContainer
-						config={{
-							storyPoints: {
-								label: "Story Points",
-								color: "hsl(var(--chart-1))",
-							},
-							pointsPerHour: {
-								label: "Points Per Hour",
-								color: "hsl(var(--chart-5))",
-							},
-						}}>
-						<ResponsiveContainer width="100%" height="100%">
-							<LineChart data={sprintEfficiencyData}>
-								<CartesianGrid strokeDasharray="3 3" />
-								<XAxis dataKey="name" />
-								<YAxis />
-								<Tooltip content={<ChartTooltipContent />} />
-								<Legend />
-								<Line
-									type="monotone"
-									dataKey="storyPoints"
-									stroke="hsl(var(--chart-1))"
-									strokeWidth={2}
-									dot={{ r: 4 }}
-								/>
-								<Line
-									type="monotone"
-									dataKey="pointsPerHour"
-									stroke="hsl(var(--chart-5))"
-									strokeWidth={2}
-									dot={{ r: 4 }}
-								/>
-							</LineChart>
-						</ResponsiveContainer>
-					</ChartContainer>
+					<Line data={sprintEfficiencyChartData} options={chartOptions} />
 				</CardContent>
 			</Card>
 		</div>
