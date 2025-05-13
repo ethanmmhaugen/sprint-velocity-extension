@@ -4,7 +4,6 @@ import { useDataContext } from "@/app/context/DataContext";
 
 export default function SummaryCards() {
 	const { entries } = useDataContext();
-	debugger;
 	// Get the last two sprints' data
 	const sprintData = entries
 		.reduce(

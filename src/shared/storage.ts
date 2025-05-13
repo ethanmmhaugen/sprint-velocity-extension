@@ -9,23 +9,23 @@ const toSnakeCase = (str: string) =>
 
 // Convert snake_case to camelCase
 const toCamelCase = (str: string) =>
-	str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+	str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
 
 // Convert object keys from camelCase to snake_case
 const toSnakeCaseObject = (obj: any) => {
 	const result: any = {};
-	Object.keys(obj).forEach((key) => {
+	for (const key in obj) {
 		result[toSnakeCase(key)] = obj[key];
-	});
+	}
 	return result;
 };
 
 // Convert object keys from snake_case to camelCase
 const toCamelCaseObject = (obj: any) => {
 	const result: any = {};
-	Object.keys(obj).forEach((key) => {
+	for (const key in obj) {
 		result[toCamelCase(key)] = obj[key];
-	});
+	}
 	return result;
 };
 
@@ -46,8 +46,12 @@ export const Storage = {
 	},
 
 	async save(entry: StoryEntry): Promise<void> {
-		// Convert camelCase to snake_case
-		const snakeCaseEntry = toSnakeCaseObject(entry);
+		// Convert camelCase to snake_case and add created_at
+		const snakeCaseEntry = {
+			...toSnakeCaseObject(entry),
+			created_at: new Date().toISOString(),
+		};
+
 		const { error } = await supabase.from(TABLE_NAME).insert([snakeCaseEntry]);
 
 		if (error) {
@@ -57,8 +61,11 @@ export const Storage = {
 	},
 
 	async setAll(entries: StoryEntry[]): Promise<void> {
-		// Convert camelCase to snake_case
-		const snakeCaseEntries = entries.map(toSnakeCaseObject);
+		// Convert camelCase to snake_case and add created_at for new entries
+		const snakeCaseEntries = entries.map((entry) => ({
+			...toSnakeCaseObject(entry),
+			created_at: entry.created_at || new Date().toISOString(),
+		}));
 
 		// Insert all entries
 		if (snakeCaseEntries.length > 0) {

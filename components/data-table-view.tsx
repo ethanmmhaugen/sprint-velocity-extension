@@ -21,6 +21,7 @@ import {
 } from "@components/ui/table";
 import { ScrollArea } from "@components/ui/scroll-area";
 import { Trash2, Upload, Plus } from "lucide-react";
+import { useDataContext } from "@/app/context/DataContext";
 
 // Sample data
 const sprintData = [
@@ -112,6 +113,8 @@ const sprintData = [
 
 export default function DataTableView() {
 	const [selectedRows, setSelectedRows] = useState<number[]>([]);
+	const { entries, handleImport, isUploading, handleDeleteSelected } =
+		useDataContext();
 
 	const toggleRowSelection = (id: number) => {
 		if (selectedRows.includes(id)) {
@@ -133,13 +136,18 @@ export default function DataTableView() {
 						<Button
 							variant="destructive"
 							size="sm"
-							disabled={selectedRows.length === 0}>
+							disabled={selectedRows.length === 0}
+							onClick={handleDeleteSelected}>
 							<Trash2 className="h-4 w-4 mr-2" />
 							Delete Selected
 						</Button>
-						<Button variant="outline" size="sm">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleImport}
+							disabled={isUploading}>
 							<Upload className="h-4 w-4 mr-2" />
-							Import from CSV
+							{isUploading ? "Importing..." : "Import from CSV"}
 						</Button>
 					</div>
 					<Button size="sm">
@@ -164,18 +172,18 @@ export default function DataTableView() {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{sprintData.map((row) => (
+							{entries.map((row) => (
 								<TableRow
 									key={row.id}
 									className={
-										selectedRows.includes(row.id)
+										selectedRows.includes(Number(row.id))
 											? "bg-slate-100 dark:bg-slate-800"
 											: ""
 									}>
 									<TableCell>
 										<Checkbox
-											checked={selectedRows.includes(row.id)}
-											onCheckedChange={() => toggleRowSelection(row.id)}
+											checked={selectedRows.includes(Number(row.id))}
+											onCheckedChange={() => toggleRowSelection(Number(row.id))}
 										/>
 									</TableCell>
 									<TableCell className="font-medium">{row.issueKey}</TableCell>

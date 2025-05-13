@@ -1,6 +1,6 @@
 // src/shared/models.ts
 
-/** One logged “story” entry */
+/** One logged "story" entry */
 export interface StoryEntry {
 	id: string; // Unique internal ID
 	issueKey: string; // e.g., TITANS-1234
@@ -14,4 +14,5 @@ export interface StoryEntry {
 	gamePoints: number;
 	devHours: number;
 	notes: string;
+	created_at?: string; // ISO timestamp of when the entry was created
 }
